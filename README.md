@@ -1,11 +1,13 @@
 # sharekit-cli
 
-A small, rule-driven CLI that scans a directory for leaked secrets — private keys, cloud/API
-tokens, sensitive env vars — and blocks on high-severity findings unless you pass `--force`.
+A small CLI that scaffolds a publishable "AI coding setup" profile and scans a directory for
+leaked secrets — private keys, cloud/API tokens, sensitive env vars — blocking on high-severity
+findings unless you pass `--force`.
 
-It's a Ruby port of the `scan` command from [sharekit](https://github.com/LucasSantana-Dev/sharekit),
-a TypeScript CLI I built and publish to npm. This port is deliberately not a line-for-line
-translation — it's rebuilt around Ruby idioms that don't have a clean TS equivalent:
+It's a Ruby port of the `init` and `scan` commands from
+[sharekit](https://github.com/LucasSantana-Dev/sharekit), a TypeScript CLI I built and publish
+to npm. This port is deliberately not a line-for-line translation — it's rebuilt around Ruby
+idioms that don't have a clean TS equivalent:
 
 - **`Data.define`** for the immutable `Finding` value object, with `Comparable` mixed in for
   free severity-ranked sorting, and free `Hash` deconstruction for pattern matching.
@@ -19,6 +21,9 @@ translation — it's rebuilt around Ruby idioms that don't have a clean TS equiv
 - **`case/in` pattern matching** in `Reporter.format_line`, matching directly on the `Finding`'s
   deconstructed fields instead of manual attribute access.
 - **Thor** for CLI dispatch instead of hand-parsed `ARGV`/flags.
+- **`git ls-files`, not a hand-rolled ignore-file parser.** `scan` defers to git for
+  `.gitignore`-aware file listing when run inside a repo (via `Open3`, argv-array — no shell
+  interpolation), instead of reimplementing gitignore match semantics.
 
 ## Install
 
@@ -40,6 +45,10 @@ gem "sharekit-cli", git: "https://github.com/LucasSantana-Dev/sharekit-cli.git"
 ```bash
 sharekit-cli scan [DIR]          # scan a directory (default: .)
 sharekit-cli scan [DIR] --force  # don't block on high-severity findings
+
+sharekit-cli init [SKILL...]              # scaffold ./sharekit-profile
+sharekit-cli init --dir PATH [SKILL...]   # scaffold at a custom path
+sharekit-cli init --force                 # overwrite an existing dir; override secret blocking
 ```
 
 ```
@@ -53,7 +62,10 @@ $ sharekit-cli scan .
 Secrets export blocked: 1 high-severity finding(s) detected. Review and remove secrets, or re-run with --force to override.
 ```
 
-Exit code is `1` when a high-severity secret is found and `--force` wasn't passed; `0` otherwise.
+Both commands exit `1` when a high-severity secret is found and `--force` wasn't passed; `0`
+otherwise. `init` copies `~/.claude/CLAUDE.md` and `~/.cursor/.cursorrules` into the new profile
+(or writes placeholders if they don't exist) and scans everything it copies for secrets before
+reporting success.
 
 ### Rules
 
@@ -71,10 +83,11 @@ Exit code is `1` when a high-severity secret is found and `--force` wasn't passe
 ## Development
 
 ```bash
-bin/setup          # install dependencies
-bundle exec rspec   # run the test suite (45 examples)
-bundle exec rubocop # lint
-bin/console         # interactive prompt
+bin/setup                            # install dependencies
+bundle exec rspec                    # run the test suite (61 examples)
+bundle exec rubocop                  # lint
+bundle exec bundler-audit check --update  # dependency vulnerability scan
+bin/console                          # interactive prompt
 ```
 
 ## License
