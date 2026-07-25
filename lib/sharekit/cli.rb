@@ -5,6 +5,7 @@ require_relative "cli/version"
 require_relative "cli/finding"
 require_relative "cli/scanner"
 require_relative "cli/reporter"
+require_relative "cli/file_lister"
 
 module Sharekit
   module Cli
@@ -21,7 +22,7 @@ module Sharekit
                     default: false,
                     desc: "exit 0 even if high-severity findings detected"
       def scan(dir = ".")
-        findings = Dir.glob("#{dir}/**/*").select { |f| File.file?(f) }.flat_map do |path|
+        findings = FileLister.list(dir).flat_map do |path|
           Scanner.scan(File.read(path, encoding: "UTF-8"), file: path).to_a
         rescue ArgumentError, Errno::ENOENT, Errno::EACCES => e
           puts "    ~ Skipped #{path}: #{e.class}"
