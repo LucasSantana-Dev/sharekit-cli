@@ -27,17 +27,14 @@ idioms that don't have a clean TS equivalent:
 
 ## Install
 
-Not yet published to RubyGems. Install straight from git:
-
 ```bash
-gem install specific_install
-gem specific_install https://github.com/LucasSantana-Dev/sharekit-cli.git
+gem install sharekit-cli
 ```
 
 Or add to a `Gemfile`:
 
 ```ruby
-gem "sharekit-cli", git: "https://github.com/LucasSantana-Dev/sharekit-cli.git"
+gem "sharekit-cli"
 ```
 
 ## Usage
