@@ -57,4 +57,34 @@ RSpec.describe Sharekit::Cli::App do
       File.chmod(0o644, unreadable)
     end
   end
+
+  describe "init" do
+    def profile_dir
+      File.join(@dir, "sharekit-profile")
+    end
+
+    it "scaffolds a profile and exits 0 when the source has no secrets" do
+      expect { run("init", "--dir", profile_dir) }.to output(/Created profile/).to_stdout
+      expect(File).to exist(File.join(profile_dir, "sharekit.toml"))
+    end
+
+    it "exits 1 without --force when the source CLAUDE.md has a high-severity secret" do
+      claude_md = File.join(@dir, ".claude", "CLAUDE.md")
+      write(".claude/CLAUDE.md", "# instructions\n-----BEGIN PRIVATE KEY-----\nTest\n-----END PRIVATE KEY-----")
+      expect(File).to exist(claude_md) # sanity: write helper worked before we override HOME below
+
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with("HOME", anything).and_return(@dir)
+
+      expect { run("init", "--dir", profile_dir) }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+    end
+
+    it "succeeds with --force even when a high-severity secret is present" do
+      write(".claude/CLAUDE.md", "# instructions\n-----BEGIN PRIVATE KEY-----\nTest\n-----END PRIVATE KEY-----")
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with("HOME", anything).and_return(@dir)
+
+      expect { run("init", "--dir", profile_dir, "--force") }.not_to raise_error
+    end
+  end
 end
