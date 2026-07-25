@@ -1,39 +1,82 @@
-# Sharekit::Cli
+# sharekit-cli
 
-TODO: Delete this and the text below, and describe your gem
+A small, rule-driven CLI that scans a directory for leaked secrets — private keys, cloud/API
+tokens, sensitive env vars — and blocks on high-severity findings unless you pass `--force`.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/sharekit/cli`. To experiment with that code, run `bin/console` for an interactive prompt.
+It's a Ruby port of the `scan` command from [sharekit](https://github.com/LucasSantana-Dev/sharekit),
+a TypeScript CLI I built and publish to npm. This port is deliberately not a line-for-line
+translation — it's rebuilt around Ruby idioms that don't have a clean TS equivalent:
 
-## Installation
+- **`Data.define`** for the immutable `Finding` value object, with `Comparable` mixed in for
+  free severity-ranked sorting, and free `Hash` deconstruction for pattern matching.
+- **A rule table, not an if/elsif chain.** Each secret pattern is a `Scanner::Rule` (a `Data`
+  object: pattern + severity + preview metadata), stored in a frozen array. Adding a rule means
+  appending to `RULES` — the scan loop itself never changes.
+- **`Enumerator` dual API.** `Scanner.scan` yields to a block when one is given, or returns an
+  `Enumerator` when it isn't (`return to_enum(:scan, ...) unless block_given?`) — the same
+  pattern as `Array#each`. Callers can stream (`each { }`) or collect (`.to_a`, `.first`, `.lazy`)
+  without the scanner caring which.
+- **`case/in` pattern matching** in `Reporter.format_line`, matching directly on the `Finding`'s
+  deconstructed fields instead of manual attribute access.
+- **Thor** for CLI dispatch instead of hand-parsed `ARGV`/flags.
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+## Install
 
-Install the gem and add to the application's Gemfile by executing:
+Not yet published to RubyGems. Install straight from git:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install specific_install
+gem specific_install https://github.com/LucasSantana-Dev/sharekit-cli.git
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Or add to a `Gemfile`:
 
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "sharekit-cli", git: "https://github.com/LucasSantana-Dev/sharekit-cli.git"
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+```bash
+sharekit-cli scan [DIR]          # scan a directory (default: .)
+sharekit-cli scan [DIR] --force  # don't block on high-severity findings
+```
+
+```
+$ sharekit-cli scan .
+
+  ⚠  Secret patterns detected:
+    .env:1 [AWS Access Key ID] …Y=AKIAEXAMPLEKEY000000
+
+  ⚠  Review and redact secrets before pushing to a public repository.
+
+Secrets export blocked: 1 high-severity finding(s) detected. Review and remove secrets, or re-run with --force to override.
+```
+
+Exit code is `1` when a high-severity secret is found and `--force` wasn't passed; `0` otherwise.
+
+### Rules
+
+| Rule                          | Severity |
+|--------------------------------|----------|
+| Private Key Block              | high     |
+| AWS Access Key ID              | high     |
+| GitHub Personal Access Token   | high     |
+| Slack Token                    | high     |
+| Google API Key                 | high     |
+| Bearer Token (JWT)             | high     |
+| Home Directory Path Leak       | low      |
+| Env Var: Sensitive Key         | medium   |
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/sharekit-cli.
+```bash
+bin/setup          # install dependencies
+bundle exec rspec   # run the test suite (45 examples)
+bundle exec rubocop # lint
+bin/console         # interactive prompt
+```
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+MIT.
