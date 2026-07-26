@@ -9,8 +9,14 @@ require_relative "cli/file_lister"
 require_relative "cli/init"
 
 module Sharekit
+  # Command-line entry points for scanning a directory for leaked secrets and
+  # scaffolding a publishable profile.
   module Cli
     class Error < StandardError; end
+
+    # Loading ruby_llm pulls in a provider stack that a plain `scan` never needs,
+    # so Triage is resolved on first reference instead of at boot.
+    autoload :Triage, "sharekit/cli/triage"
 
     # Thor gives us subcommand dispatch, flag parsing, and --help for free —
     # the TS original hand-parses process.argv/flags itself.
@@ -22,14 +28,23 @@ module Sharekit
                     type: :boolean,
                     default: false,
                     desc: "exit 0 even if high-severity findings detected"
+      method_option :ai_triage,
+                    type: :boolean,
+                    default: false,
+                    desc: "label findings true/false positive with an LLM (secret values are redacted first)"
+      method_option :model,
+                    type: :string,
+                    desc: "model id for --ai-triage (default: RubyLLM's configured default)"
+      method_option :provider,
+                    type: :string,
+                    desc: "provider for --ai-triage, e.g. anthropic, openai, ollama"
+      method_option :assume_model_exists,
+                    type: :boolean,
+                    default: false,
+                    desc: "skip model-registry validation, needed for local Ollama models"
       def scan(dir = ".")
-        findings = FileLister.list(dir).flat_map do |path|
-          Scanner.scan(File.read(path, encoding: "UTF-8"), file: path).to_a
-        rescue ArgumentError, Errno::ENOENT, Errno::EACCES => e
-          puts "    ~ Skipped #{path}: #{e.class}"
-          []
-        end
-
+        findings = collect_findings(dir)
+        findings = triage(findings) if options[:ai_triage]
         Reporter.report(findings, force: options[:force])
       rescue Error => e
         warn e.message
@@ -55,6 +70,25 @@ module Sharekit
       end
 
       no_commands do
+        def collect_findings(dir)
+          FileLister.list(dir).flat_map do |path|
+            Scanner.scan(File.read(path, encoding: "UTF-8"), file: path).to_a
+          rescue ArgumentError, Errno::ENOENT, Errno::EACCES => e
+            puts "    ~ Skipped #{path}: #{e.class}"
+            []
+          end
+        end
+
+        def triage(findings)
+          return findings if findings.empty?
+
+          puts "\n  … AI triage: #{findings.size} finding(s), secret values redacted before sending"
+          Triage.call(findings,
+                      model: options[:model],
+                      provider: options[:provider]&.to_sym,
+                      assume_model_exists: options[:assume_model_exists])
+        end
+
         def print_init_summary(result)
           result.created.each { |path| puts "  + #{path}" }
           puts "\n  ✓ Created profile at #{result.profile_dir}\n\n"
