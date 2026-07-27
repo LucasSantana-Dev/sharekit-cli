@@ -21,6 +21,41 @@ RSpec.describe Sharekit::Cli::App do
     File.write(full, content)
   end
 
+  describe "the optional-dependency promise" do
+    # Has to run in a fresh process: this suite loads ruby_llm for the triage specs,
+    # so an in-process `defined?(RubyLLM)` would always say yes. Guards the published
+    # claim that installing sharekit-cli alone is enough to run `scan` — if someone
+    # swaps the autoload for a plain require, this is what notices.
+    it "does not load the provider stack during a plain scan" do
+      write("README.md", "# clean\n")
+      script = <<~RUBY
+        require "sharekit/cli"
+        Sharekit::Cli::App.start(["scan", ARGV[0], "--force"])
+        warn(defined?(RubyLLM) ? "LOADED" : "absent")
+      RUBY
+
+      output = IO.popen([RbConfig.ruby, "-Ilib", "-e", script, @dir], err: %i[child out], &:read)
+
+      expect(output).to include("absent")
+      expect(output).not_to include("LOADED")
+    end
+  end
+
+  describe "scan --ai-triage without the optional provider gem" do
+    it "explains how to install ruby_llm instead of leaking a raw LoadError" do
+      write("CLAUDE.md", "AWS_KEY=AKIA4RTQZK9WXDLM2PVB\n")
+      allow(Sharekit::Cli::Triage).to receive(:call)
+        .and_raise(LoadError, "cannot load such file -- ruby_llm")
+
+      # `scan` exits 1 on Cli::Error, so SystemExit has to be caught here or it
+      # tears down the whole rspec process and the rest of the suite never runs.
+      expect do
+        expect { run("scan", @dir, "--ai-triage", "--force") }
+          .to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+      end.to output(/gem install ruby_llm/).to_stderr
+    end
+  end
+
   it "prints a clean message and exits 0 for a directory with no secrets" do
     write("README.md", "# clean instructions\n")
 
