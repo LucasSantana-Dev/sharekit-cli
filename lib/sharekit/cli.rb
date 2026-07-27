@@ -87,6 +87,12 @@ module Sharekit
                       model: options[:model],
                       provider: options[:provider]&.to_sym,
                       assume_model_exists: options[:assume_model_exists])
+        rescue LoadError => e
+          # ruby_llm is optional: a scan-only install should not have to carry a
+          # provider stack. Autoloading Triage is what surfaces its absence here.
+          raise Error, "--ai-triage needs the ruby_llm gem, which is not installed. " \
+                        "Install it with `gem install ruby_llm` (or add it to your Gemfile). " \
+                        "(#{e.message})"
         end
 
         def print_init_summary(result)

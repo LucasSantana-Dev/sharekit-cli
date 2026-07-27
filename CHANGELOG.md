@@ -5,6 +5,9 @@
 - `scan --ai-triage` labels each finding `true_positive`, `false_positive` or
   `uncertain` with a confidence and a one-line rationale, via RubyLLM structured
   output. Works against any RubyLLM provider; `--provider ollama` needs no setup.
+- `ruby_llm` is an **optional** dependency, not a runtime one: `scan` alone pulls
+  nothing new, and `--ai-triage` without it reports how to install it. Run
+  `gem install ruby_llm` to enable triage.
 - Secret values are never transmitted, and there is no opt-out. Findings are
   reduced to their shape (length plus Shannon entropy) before the prompt is
   built. See `docs/adr/2026-07-26-redact-always-ai-triage.md`.

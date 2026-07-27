@@ -20,3 +20,7 @@ gem "rubocop", "~> 1.21"
 gem "parallel", "~> 1.28.0"
 
 gem "bundler-audit", "~> 0.9"
+
+# Optional at runtime (see the gemspec), required here so the AI-triage specs and
+# CI exercise the real library rather than a stub.
+gem "ruby_llm", "~> 1.16"

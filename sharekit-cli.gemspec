@@ -33,8 +33,14 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "ruby_llm", "~> 1.16"
   spec.add_dependency "thor", "~> 1.3"
+
+  # ruby_llm is deliberately NOT a runtime dependency. It is only needed for
+  # `scan --ai-triage`, and making it required would put a provider stack
+  # (faraday, zeitwerk, marcel, ruby_llm-schema) in front of every install of a
+  # small secret scanner. Sharekit::Cli autoloads Triage, so a scan-only install
+  # never tries to load it; asking for --ai-triage without it produces an
+  # actionable "gem install ruby_llm" error rather than a LoadError.
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://guides.rubygems.org/make-your-own-gem/

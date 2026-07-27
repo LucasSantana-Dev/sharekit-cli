@@ -74,7 +74,17 @@ reporting success.
 ### AI triage
 
 `--ai-triage` labels each finding as a real leak, a placeholder, or unclear, so a docs
-sample stops looking exactly like a live key:
+sample stops looking exactly like a live key.
+
+It needs one extra gem, which `scan` itself does not:
+
+```bash
+gem install ruby_llm
+```
+
+That is deliberate. A secret scanner shouldn't drag a provider stack into every install, so
+`ruby_llm` is optional: `sharekit-cli scan` never loads it, and `--ai-triage` without it fails
+with instructions rather than a `LoadError`.
 
 ```bash
 sharekit-cli scan --ai-triage                                        # any configured provider
