@@ -28,7 +28,7 @@ module Sharekit
         masked = Scanner::RULES.reduce(line) do |acc, rule|
           acc.gsub(rule.pattern) { |hit| mask(hit) }
         end
-        mask_env_value(masked).gsub(GENERIC_SECRET_PATTERN) { |hit| mask(hit) }
+        mask_env_values(masked).gsub(GENERIC_SECRET_PATTERN) { |hit| mask(hit) }
       end
 
       def mask(secret)
@@ -47,8 +47,17 @@ module Sharekit
         end
       end
 
-      def mask_env_value(line)
-        line.sub(Scanner::ENV_VAR_PATTERN) do |hit|
+      # Scanner's ENV_VAR_PATTERN ends in `(.*)$`, which swallows the rest of the line,
+      # so the first assignment is the only one it ever examines. That is fine for
+      # reporting one finding per line, but as a redaction pass it leaks: in
+      # `PATH=/usr/bin API_KEY=short` the boring first key short-circuits the check and
+      # the real secret is never masked, while being too short for the generic
+      # backstop. Redaction therefore matches one assignment at a time. Quoted forms
+      # are listed explicitly because a bare `\S*` stops at the space in `KEY="a b"`.
+      ENV_ASSIGNMENT_PATTERN = /(?:^|\s)(?:export\s+)?([A-Z_]+)=("[^"]*"|'[^']*'|\S*)/
+
+      def mask_env_values(line)
+        line.gsub(ENV_ASSIGNMENT_PATTERN) do |hit|
           key = Regexp.last_match(1)
           value = Regexp.last_match(2)
           next hit unless Scanner::SENSITIVE_KEY_PATTERN.match?(key)

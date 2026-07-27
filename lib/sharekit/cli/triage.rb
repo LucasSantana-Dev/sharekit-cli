@@ -26,6 +26,8 @@ module Sharekit
 
       RATIONALE_LIMIT = 120
 
+      SOURCE_UNAVAILABLE = "[source unavailable]"
+
       # A missing API key or an unknown model id raise off a different branch of
       # RubyLLM's hierarchy than provider/HTTP faults, and they are the two most
       # likely failures here, so both branches are caught.
@@ -99,20 +101,24 @@ module Sharekit
       end
 
       # Rebuilds each finding's line from disk so redaction sees the whole line,
-      # never the already-truncated preview. Unreadable files fall back to the
-      # preview, which is redacted the same way.
+      # never the already-truncated preview.
       def prompt_for(findings)
         lines = Hash.new { |cache, path| cache[path] = read_lines(path) }
 
         findings.each_with_index.map { |finding, index| entry(finding, index, lines) }.join("\n")
       end
 
+      # There is deliberately no fallback to `finding.preview` when the file cannot be
+      # read: the preview is truncated, and a fragment cut mid-token matches neither its
+      # own rule nor the generic backstop, which is the exact leak reading from disk
+      # exists to prevent. Losing one finding's context is the cheaper failure. The path
+      # is redacted too, so a token embedded in a filename cannot ride along.
       def entry(finding, index, lines)
-        raw = lines[finding.file]&.[](finding.line - 1) || finding.preview
+        raw = lines[finding.file]&.[](finding.line - 1)
         <<~ENTRY
           #{index}. rule=#{finding.rule} severity=#{finding.severity}
-             location=#{finding.file}:#{finding.line}
-             context=#{Redactor.redact(raw.chomp)}
+             location=#{Redactor.redact(finding.file)}:#{finding.line}
+             context=#{raw ? Redactor.redact(raw.chomp) : SOURCE_UNAVAILABLE}
         ENTRY
       end
 

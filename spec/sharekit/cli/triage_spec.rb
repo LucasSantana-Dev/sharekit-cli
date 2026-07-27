@@ -91,10 +91,20 @@ RSpec.describe Sharekit::Cli::Triage do
       end
     end
 
-    it "never sends a secret value even when the file cannot be read" do
+    it "sends no context at all when the file cannot be read" do
+      # The preview is truncated, so falling back to it can ship a fragment that
+      # matches neither its own rule nor the backstop. Dropping context is correct.
       described_class.call([finding(file: "/nonexistent/x.rb", preview: "k=#{aws_key}")])
 
+      expect(prompts.first).to include("[source unavailable]")
       expect(prompts.first).not_to include(aws_key)
+    end
+
+    it "redacts the file path, so a secret in a filename cannot ride along" do
+      described_class.call([finding(file: "keys/#{aws_key}.pem")])
+
+      expect(prompts.first).not_to include(aws_key)
+      expect(prompts.first).to include("location=keys/")
     end
 
     it "sends the rule, severity and location the classifier needs" do

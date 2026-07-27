@@ -50,6 +50,16 @@ RSpec.describe Sharekit::Cli::Redactor do
       expect(redacted).not_to include("s3cretvalue")
     end
 
+    it "masks a sensitive value that follows a non-sensitive assignment on the same line" do
+      # Scanner's ENV_VAR_PATTERN captures `(.*)$`, so the first `KEY=` on a line is
+      # the only one it reports. If redaction inherits that, a short secret behind a
+      # boring assignment survives: too short for the generic backstop, never seen by
+      # the env-var pass.
+      redacted = described_class.redact("PATH=/usr/bin API_KEY=short1")
+
+      expect(redacted).not_to include("short1")
+    end
+
     it "masks a high-entropy run that no rule claims" do
       redacted = described_class.redact("blob: Zx8RtVwN4dCsB6yTgHjPu3aErQ")
 
