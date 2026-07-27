@@ -2,7 +2,7 @@
 
 require_relative "finding"
 
-module Sharekit
+module Leakless
   module Cli
     # Rule-driven secret scanner. Each rule is data (pattern + metadata), not a
     # branch in an if/elsif chain — adding a rule means appending to RULES,

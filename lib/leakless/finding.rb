@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Sharekit
+module Leakless
   module Cli
     SEVERITY_RANK = { high: 2, medium: 1, low: 0 }.freeze
 

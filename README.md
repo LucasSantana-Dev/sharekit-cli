@@ -1,4 +1,4 @@
-# sharekit-cli
+# leakless
 
 A small CLI that scaffolds a publishable "AI coding setup" profile and scans a directory for
 leaked secrets — private keys, cloud/API tokens, sensitive env vars — blocking on high-severity
@@ -35,28 +35,28 @@ idioms that don't have a clean TS equivalent:
 ## Install
 
 ```bash
-gem install sharekit-cli
+gem install leakless
 ```
 
 Or add to a `Gemfile`:
 
 ```ruby
-gem "sharekit-cli"
+gem "leakless"
 ```
 
 ## Usage
 
 ```bash
-sharekit-cli scan [DIR]          # scan a directory (default: .)
-sharekit-cli scan [DIR] --force  # don't block on high-severity findings
+leakless scan [DIR]          # scan a directory (default: .)
+leakless scan [DIR] --force  # don't block on high-severity findings
 
-sharekit-cli init [SKILL...]              # scaffold ./sharekit-profile
-sharekit-cli init --dir PATH [SKILL...]   # scaffold at a custom path
-sharekit-cli init --force                 # overwrite an existing dir; override secret blocking
+leakless init [SKILL...]              # scaffold ./sharekit-profile
+leakless init --dir PATH [SKILL...]   # scaffold at a custom path
+leakless init --force                 # overwrite an existing dir; override secret blocking
 ```
 
 ```
-$ sharekit-cli scan .
+$ leakless scan .
 
   ⚠  Secret patterns detected:
     .env:1 [AWS Access Key ID] …Y=AKIAEXAMPLEKEY000000
@@ -83,12 +83,12 @@ gem install ruby_llm
 ```
 
 That is deliberate. A secret scanner shouldn't drag a provider stack into every install, so
-`ruby_llm` is optional: `sharekit-cli scan` never loads it, and `--ai-triage` without it fails
+`ruby_llm` is optional: `leakless scan` never loads it, and `--ai-triage` without it fails
 with instructions rather than a `LoadError`.
 
 ```bash
-sharekit-cli scan --ai-triage                                        # any configured provider
-sharekit-cli scan --ai-triage --provider ollama --model qwen3:4b \
+leakless scan --ai-triage                                        # any configured provider
+leakless scan --ai-triage --provider ollama --model qwen3:4b \
                   --assume-model-exists                              # fully local
 ```
 

@@ -3,9 +3,9 @@
 require "tmpdir"
 require "fileutils"
 
-RSpec.describe Sharekit::Cli::Init do
+RSpec.describe Leakless::Cli::Init do
   around do |example|
-    Dir.mktmpdir("sharekit-cli-init-spec-") do |tmp|
+    Dir.mktmpdir("leakless-init-spec-") do |tmp|
       @tmp = tmp
       @source_root = File.join(tmp, "source")
       @profile_dir = File.join(tmp, "sharekit-profile")
@@ -62,7 +62,7 @@ RSpec.describe Sharekit::Cli::Init do
 
   it "raises if the profile dir already exists without --force" do
     FileUtils.mkdir_p(@profile_dir)
-    expect { call }.to raise_error(Sharekit::Cli::Error, /already exists/)
+    expect { call }.to raise_error(Leakless::Cli::Error, /already exists/)
   end
 
   it "overwrites the existing profile dir with --force" do

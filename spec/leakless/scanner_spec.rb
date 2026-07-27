@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Sharekit::Cli::Scanner do
+RSpec.describe Leakless::Cli::Scanner do
   def scan(content, file: nil)
     described_class.scan(content, file:).to_a
   end

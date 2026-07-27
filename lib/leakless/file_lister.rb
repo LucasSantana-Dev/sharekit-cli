@@ -2,7 +2,7 @@
 
 require "open3"
 
-module Sharekit
+module Leakless
   module Cli
     # Picks which files a scan should look at. Inside a git repo, defers to
     # `git ls-files` (tracked + untracked-but-not-ignored) so .gitignore is

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 require "thor"
-require_relative "cli/version"
-require_relative "cli/finding"
-require_relative "cli/scanner"
-require_relative "cli/reporter"
-require_relative "cli/file_lister"
-require_relative "cli/init"
+require_relative "leakless/version"
+require_relative "leakless/finding"
+require_relative "leakless/scanner"
+require_relative "leakless/reporter"
+require_relative "leakless/file_lister"
+require_relative "leakless/init"
 
-module Sharekit
+module Leakless
   # Command-line entry points for scanning a directory for leaked secrets and
   # scaffolding a publishable profile.
   module Cli
@@ -16,7 +16,7 @@ module Sharekit
 
     # Loading ruby_llm pulls in a provider stack that a plain `scan` never needs,
     # so Triage is resolved on first reference instead of at boot.
-    autoload :Triage, "sharekit/cli/triage"
+    autoload :Triage, "leakless/triage"
 
     # Thor gives us subcommand dispatch, flag parsing, and --help for free —
     # the TS original hand-parses process.argv/flags itself.
