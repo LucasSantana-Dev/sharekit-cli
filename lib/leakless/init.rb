@@ -2,7 +2,7 @@
 
 require "fileutils"
 
-module Sharekit
+module Leakless
   module Cli
     # Scaffolds a publishable sharekit profile: sharekit.toml, a claude/
     # CLAUDE.md, a cursor/.cursorrules, an empty shared/, and any requested

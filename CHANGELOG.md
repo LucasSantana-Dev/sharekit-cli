@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-27
+
+- Gem renamed from `sharekit-cli` to `leakless`. Module `Sharekit::Cli` is now
+  `Leakless::Cli`, the executable is now `leakless`, and the repository moved to
+  `github.com/LucasSantana-Dev/leakless`. No behavior changes. `sharekit-cli`
+  0.2.0 remains on RubyGems as the final release under the old name.
+
 ## [0.2.0] - 2026-07-26
 
 - `scan --ai-triage` labels each finding `true_positive`, `false_positive` or

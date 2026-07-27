@@ -4,7 +4,7 @@ require "tmpdir"
 require "fileutils"
 require "open3"
 
-RSpec.describe Sharekit::Cli::FileLister do
+RSpec.describe Leakless::Cli::FileLister do
   def write(dir, relative_path, content = "x")
     full = File.join(dir, relative_path)
     FileUtils.mkdir_p(File.dirname(full))

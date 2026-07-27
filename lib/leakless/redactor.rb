@@ -2,7 +2,7 @@
 
 require_relative "scanner"
 
-module Sharekit
+module Leakless
   module Cli
     # Strips secret material out of a line before it can leave the machine.
     #

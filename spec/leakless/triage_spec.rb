@@ -2,7 +2,7 @@
 
 require "tmpdir"
 
-RSpec.describe Sharekit::Cli::Triage do
+RSpec.describe Leakless::Cli::Triage do
   # Fake JWT with a deliberately short header segment. The scanner's 30-char
   # preview cuts this JWT after its first dot, leaving a 16-char fragment that
   # the Bearer rule (which needs two dots) no longer matches and that is too
@@ -27,7 +27,7 @@ RSpec.describe Sharekit::Cli::Triage do
   end
 
   def finding(rule: "AWS Access Key ID", preview: "p", severity: :high, file: "f.txt")
-    Sharekit::Cli::Finding.new(rule:, file:, line: 1, preview:, severity:)
+    Leakless::Cli::Finding.new(rule:, file:, line: 1, preview:, severity:)
   end
 
   def verdict_row(index: 0, verdict: "false_positive", confidence: 0.9, rationale: "docs sample")
@@ -80,7 +80,7 @@ RSpec.describe Sharekit::Cli::Triage do
       Dir.mktmpdir do |dir|
         path = File.join(dir, "conf.rb")
         File.write(path, %(auth = "#{jwt}"\n))
-        scanned = Sharekit::Cli::Scanner.scan(File.read(path), file: path).first
+        scanned = Leakless::Cli::Scanner.scan(File.read(path), file: path).first
 
         described_class.call([scanned])
 
@@ -188,7 +188,7 @@ RSpec.describe Sharekit::Cli::Triage do
       allow(chat).to receive(:ask).and_raise(RubyLLM::ConfigurationError, "no api key")
 
       expect { described_class.call([finding]) }
-        .to raise_error(Sharekit::Cli::Error, /AI triage failed.*no api key/)
+        .to raise_error(Leakless::Cli::Error, /AI triage failed.*no api key/)
     end
 
     it "passes model and provider through to RubyLLM" do

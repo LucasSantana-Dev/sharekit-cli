@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Sharekit
+module Leakless
   module Cli
     # Formats findings for terminal output and gates high-severity secrets.
     module Reporter

@@ -4,7 +4,7 @@ require "ruby_llm"
 require "ruby_llm/schema"
 require_relative "redactor"
 
-module Sharekit
+module Leakless
   module Cli
     # Classifies findings as real leaks or false positives with an LLM.
     #

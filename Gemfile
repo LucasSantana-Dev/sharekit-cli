@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in sharekit-cli.gemspec
+# Specify your gem's dependencies in leakless.gemspec
 gemspec
 
 gem "irb"

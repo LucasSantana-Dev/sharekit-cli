@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require_relative "lib/sharekit/cli/version"
+require_relative "lib/leakless/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "sharekit-cli"
-  spec.version = Sharekit::Cli::VERSION
+  spec.name = "leakless"
+  spec.version = Leakless::Cli::VERSION
   spec.authors = ["Lucas Santana"]
   spec.email = ["lucas.diassantana@gmail.com"]
 
   spec.summary = "Scan a directory for leaked secrets before you publish it."
   spec.description = "A small rule-driven CLI that scans files for private keys, cloud/API tokens, " \
                       "and sensitive env vars, and blocks on high-severity findings unless --force is given."
-  spec.homepage = "https://github.com/LucasSantana-Dev/sharekit-cli"
+  spec.homepage = "https://github.com/LucasSantana-Dev/leakless"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
@@ -38,7 +38,7 @@ Gem::Specification.new do |spec|
   # ruby_llm is deliberately NOT a runtime dependency. It is only needed for
   # `scan --ai-triage`, and making it required would put a provider stack
   # (faraday, zeitwerk, marcel, ruby_llm-schema) in front of every install of a
-  # small secret scanner. Sharekit::Cli autoloads Triage, so a scan-only install
+  # small secret scanner. Leakless autoloads Triage, so a scan-only install
   # never tries to load it; asking for --ai-triage without it produces an
   # actionable "gem install ruby_llm" error rather than a LoadError.
 

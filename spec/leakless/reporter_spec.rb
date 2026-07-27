@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-RSpec.describe Sharekit::Cli::Reporter do
+RSpec.describe Leakless::Cli::Reporter do
   def finding(severity, rule: "Test Rule")
-    Sharekit::Cli::Finding.new(rule:, file: "f.txt", line: 1, preview: "p", severity:)
+    Leakless::Cli::Finding.new(rule:, file: "f.txt", line: 1, preview: "p", severity:)
   end
 
   it "prints a clean message and does not raise when there are no findings" do
@@ -11,7 +11,7 @@ RSpec.describe Sharekit::Cli::Reporter do
 
   it "raises and blocks when a high-severity finding is present without --force" do
     expect { described_class.report([finding(:high)]) }
-      .to raise_error(Sharekit::Cli::Error, /export blocked/)
+      .to raise_error(Leakless::Cli::Error, /export blocked/)
   end
 
   it "does not raise for a high-severity finding when force: true" do

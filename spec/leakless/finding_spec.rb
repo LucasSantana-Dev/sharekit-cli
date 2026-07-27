@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Sharekit::Cli::Finding do
+RSpec.describe Leakless::Cli::Finding do
   def finding(severity)
     described_class.new(rule: "r", file: "f", line: 1, preview: "p", severity:)
   end

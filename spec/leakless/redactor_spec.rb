@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "sharekit/cli/redactor"
+require "leakless/redactor"
 
-RSpec.describe Sharekit::Cli::Redactor do
+RSpec.describe Leakless::Cli::Redactor do
   # Fake credentials, shaped to match each Scanner rule. Nothing here is live.
   #
   # They also have to read as fake to *other* scanners. GitHub's push protection
