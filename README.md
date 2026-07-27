@@ -82,9 +82,9 @@ sharekit-cli scan --ai-triage --provider ollama --model qwen3:4b \
                   --assume-model-exists                              # fully local
 ```
 
-```
+```text
   ⚠  Secret patterns detected:
-    config/secrets.env:1 [AWS Access Key ID] …_KEY=AKIA4RTQZK9WXDLM2PVB
+    config/secrets.env:1 [AWS Access Key ID] …_KEY=AKIAEXAMPLEKEY000000
       → likely real (95% confident) Config path, not a test or docs fixture.
     docs/example.md:3 [AWS Access Key ID] …ple `AKIAIOSFODNN7EXAMPLE…
       → likely placeholder (98% confident) Documentation path, context says "for example".
